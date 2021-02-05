@@ -5,10 +5,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os/exec"
 	"regexp"
 	"strings"
-	"syscall"
 )
 
 var reSlashDedup = regexp.MustCompile(`\/{2,}`)
@@ -24,19 +22,6 @@ func logError(context string, err error) {
 
 func logInfo(context string, message string) {
 	log.Printf("%s: %s\n", context, message)
-}
-
-func cleanUpProcessGroup(cmd *exec.Cmd) {
-	if cmd == nil {
-		return
-	}
-
-	process := cmd.Process
-	if process != nil && process.Pid > 0 {
-		syscall.Kill(-process.Pid, syscall.SIGTERM)
-	}
-
-	go cmd.Wait()
 }
 
 func packLine(w io.Writer, s string) error {

@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-	"syscall"
 )
 
 type service struct {
@@ -34,9 +33,9 @@ type Request struct {
 func New(cfg Config) *Server {
 	s := Server{config: cfg}
 	s.services = []service{
-		service{"GET", "/info/refs", s.getInfoRefs, ""},
-		service{"POST", "/git-upload-pack", s.postRPC, "git-upload-pack"},
-		service{"POST", "/git-receive-pack", s.postRPC, "git-receive-pack"},
+		{"GET", "/info/refs", s.getInfoRefs, ""},
+		{"POST", "/git-upload-pack", s.postRPC, "git-upload-pack"},
+		{"POST", "/git-receive-pack", s.postRPC, "git-receive-pack"},
 	}
 
 	// Use PATH if full path is not specified
@@ -239,15 +238,4 @@ func initRepo(name string, config *Config) error {
 func repoExists(p string) bool {
 	_, err := os.Stat(path.Join(p, "objects"))
 	return err == nil
-}
-
-func gitCommand(name string, args ...string) (*exec.Cmd, io.Reader) {
-	cmd := exec.Command(name, args...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	cmd.Env = os.Environ()
-
-	r, _ := cmd.StdoutPipe()
-	cmd.Stderr = cmd.Stdout
-
-	return cmd, r
 }
